@@ -1,0 +1,1726 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="SQL调优实例与总结, Voluee Blog">
+    <meta name="description" content="SQL调优实例与总结
+Author：VolueeMySQL版本：5.5
+这是一篇从实例出发的sql调优教程，文章开头有生成数据的语句。一键生成环境，快速上手调优。
+
+生成数据drop table if exists student;
+
+cr">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SQL调优实例与总结 | Voluee Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+    
+    <script src="/libs/jquery/jquery.min.js"></script>
+    
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper head-container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Voluee Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Voluee Blog</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/Voluee" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/Voluee" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/18.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <div class="description center-align post-title">
+                        SQL调优实例与总结
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        margin: 35px 0 15px 0;
+        padding-left: 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #toc-content .is-active-link::before {
+        background-color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/Mysql/">
+                                <span class="chip bg-color">Mysql</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Mysql/" class="post-category">
+                                Mysql
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
+                    2018-11-07
+                </div>
+                
+
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>Word Count:&nbsp;&nbsp;
+                    4.7k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>Read Times:&nbsp;&nbsp;
+                    18 Min
+                </div>
+                
+				
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>Read Count:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+            
+        </div>
+        <hr class="clearfix">
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h1 id="SQL调优实例与总结"><a href="#SQL调优实例与总结" class="headerlink" title="SQL调优实例与总结"></a>SQL调优实例与总结</h1><blockquote>
+<p>Author：<a href="https://github.com/Voluee">Voluee</a><br>MySQL版本：5.5</p>
+<p>这是一篇从实例出发的sql调优教程，文章开头有生成数据的语句。一键生成环境，快速上手调优。</p>
+</blockquote>
+<h2 id="生成数据"><a href="#生成数据" class="headerlink" title="生成数据"></a>生成数据</h2><pre class=" language-sql"><code class="language-sql"><span class="token keyword">drop</span> <span class="token keyword">table</span> <span class="token keyword">if</span> <span class="token keyword">exists</span> student<span class="token punctuation">;</span>
+
+<span class="token keyword">create</span> <span class="token keyword">table</span> <span class="token keyword">if</span> <span class="token operator">not</span> <span class="token keyword">exists</span> student
+<span class="token punctuation">(</span>
+    s_id <span class="token keyword">int</span> <span class="token operator">not</span> <span class="token boolean">null</span> <span class="token keyword">auto_increment</span> <span class="token keyword">primary</span> <span class="token keyword">key</span><span class="token punctuation">,</span>
+    s_name <span class="token keyword">varchar</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token operator">not</span> <span class="token boolean">null</span>
+<span class="token punctuation">)</span> <span class="token keyword">engine</span> <span class="token operator">=</span> <span class="token keyword">innodb</span> <span class="token keyword">default</span> <span class="token keyword">charset</span> <span class="token operator">=</span> utf8<span class="token punctuation">;</span>
+
+
+<span class="token keyword">drop</span> <span class="token keyword">table</span> <span class="token keyword">if</span> <span class="token keyword">exists</span> course<span class="token punctuation">;</span>
+
+<span class="token keyword">create</span> <span class="token keyword">table</span> <span class="token keyword">if</span> <span class="token operator">not</span> <span class="token keyword">exists</span> course
+<span class="token punctuation">(</span>
+    c_id <span class="token keyword">int</span> <span class="token operator">not</span> <span class="token boolean">null</span> <span class="token keyword">auto_increment</span> <span class="token keyword">primary</span> <span class="token keyword">key</span><span class="token punctuation">,</span>
+    c_name <span class="token keyword">varchar</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span> <span class="token operator">not</span> <span class="token boolean">null</span>
+<span class="token punctuation">)</span> <span class="token keyword">engine</span> <span class="token operator">=</span> <span class="token keyword">innodb</span> <span class="token keyword">default</span> <span class="token keyword">charset</span> <span class="token operator">=</span> utf8<span class="token punctuation">;</span>
+
+
+<span class="token keyword">drop</span> <span class="token keyword">table</span> <span class="token keyword">if</span> <span class="token keyword">exists</span> sc<span class="token punctuation">;</span>
+
+<span class="token keyword">create</span> <span class="token keyword">table</span> <span class="token keyword">if</span> <span class="token operator">not</span> <span class="token keyword">exists</span> sc
+<span class="token punctuation">(</span>
+    sc_id <span class="token keyword">int</span> <span class="token operator">not</span> <span class="token boolean">null</span> <span class="token keyword">auto_increment</span> <span class="token keyword">primary</span> <span class="token keyword">key</span><span class="token punctuation">,</span>
+    s_id <span class="token keyword">int</span> <span class="token operator">not</span> <span class="token boolean">null</span><span class="token punctuation">,</span>
+    c_id <span class="token keyword">int</span> <span class="token operator">not</span> <span class="token boolean">null</span><span class="token punctuation">,</span>
+    score <span class="token keyword">int</span> <span class="token operator">not</span> <span class="token boolean">null</span>
+<span class="token punctuation">)</span> <span class="token keyword">engine</span> <span class="token operator">=</span> <span class="token keyword">innodb</span> <span class="token keyword">default</span> <span class="token keyword">charset</span> <span class="token operator">=</span> utf8<span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">-- 以下数据表对应的数据记录数</span>
+<span class="token comment" spellcheck="true">--      10  course</span>
+<span class="token comment" spellcheck="true">--  70,000  student</span>
+<span class="token comment" spellcheck="true">-- 700,000  sc</span>
+<span class="token comment" spellcheck="true">-- 根据以上要求准备测试数据</span>
+
+<span class="token keyword">INSERT</span> <span class="token keyword">INTO</span> course <span class="token punctuation">(</span> c_id<span class="token punctuation">,</span> c_name <span class="token punctuation">)</span> 
+    <span class="token keyword">SELECT</span> 
+        <span class="token boolean">NULL</span> <span class="token keyword">AS</span> c_id<span class="token punctuation">,</span>
+        concat<span class="token punctuation">(</span> <span class="token string">'course'</span><span class="token punctuation">,</span> ID <span class="token punctuation">)</span> <span class="token keyword">AS</span> c_name 
+    <span class="token keyword">FROM</span>
+        information_schema<span class="token punctuation">.</span><span class="token punctuation">`</span>COLLATIONS<span class="token punctuation">`</span> 
+    <span class="token keyword">ORDER</span> <span class="token keyword">BY</span> ID <span class="token keyword">ASC</span> 
+    <span class="token keyword">LIMIT</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">-- 创建7w条空数据</span>
+<span class="token keyword">INSERT</span> <span class="token keyword">INTO</span> student <span class="token punctuation">(</span> s_id<span class="token punctuation">,</span> s_name <span class="token punctuation">)</span> 
+    <span class="token keyword">SELECT</span> 
+        <span class="token boolean">NULL</span> <span class="token keyword">AS</span> s_id<span class="token punctuation">,</span>
+        <span class="token string">''</span> <span class="token keyword">AS</span> s_name 
+    <span class="token keyword">FROM</span>
+        <span class="token punctuation">(</span> <span class="token keyword">SELECT</span> <span class="token number">1</span> <span class="token keyword">AS</span> column_order_id <span class="token keyword">FROM</span> information_schema<span class="token punctuation">.</span><span class="token punctuation">`</span><span class="token keyword">COLUMNS</span><span class="token punctuation">`</span> <span class="token keyword">LIMIT</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">3500</span> <span class="token punctuation">)</span> <span class="token keyword">AS</span> t
+        <span class="token keyword">CROSS</span> <span class="token keyword">JOIN</span> 
+            <span class="token punctuation">(</span> <span class="token keyword">SELECT</span> <span class="token number">1</span> <span class="token keyword">AS</span> collation_order_id <span class="token keyword">FROM</span> information_schema<span class="token punctuation">.</span><span class="token punctuation">`</span><span class="token keyword">COLUMNS</span><span class="token punctuation">`</span> <span class="token keyword">LIMIT</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">20</span> <span class="token punctuation">)</span> <span class="token keyword">AS</span> t2<span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">-- 给7w条数据赋值</span>
+<span class="token keyword">UPDATE</span> student 
+<span class="token keyword">SET</span> s_name <span class="token operator">=</span> concat<span class="token punctuation">(</span> <span class="token string">'student'</span><span class="token punctuation">,</span> s_id <span class="token punctuation">)</span> 
+<span class="token keyword">WHERE</span>
+    s_name <span class="token operator">=</span> <span class="token string">''</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">-- 创建70w条数据，10 * 7w </span>
+<span class="token keyword">INSERT</span> <span class="token keyword">INTO</span> sc <span class="token punctuation">(</span> sc_id<span class="token punctuation">,</span> s_id<span class="token punctuation">,</span> c_id<span class="token punctuation">,</span> score <span class="token punctuation">)</span> 
+    <span class="token keyword">SELECT</span> 
+        <span class="token boolean">NULL</span> <span class="token keyword">AS</span> sc_id<span class="token punctuation">,</span>
+        t2<span class="token punctuation">.</span>s_id<span class="token punctuation">,</span>
+        t<span class="token punctuation">.</span>c_id<span class="token punctuation">,</span>
+        ceiling<span class="token punctuation">(</span> rand<span class="token punctuation">(</span> <span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">100</span> <span class="token punctuation">)</span> <span class="token keyword">AS</span> score 
+    <span class="token keyword">FROM</span>
+        course <span class="token keyword">AS</span> t
+        <span class="token keyword">CROSS</span> <span class="token keyword">JOIN</span> student <span class="token keyword">AS</span> t2<span class="token punctuation">;</span></code></pre>
+<h2 id="单索引调优过程"><a href="#单索引调优过程" class="headerlink" title="单索引调优过程"></a>单索引调优过程</h2><p>查询目的：查找语文考100分的考生(c_id = 1)</p>
+<h3 id="in查询"><a href="#in查询" class="headerlink" title="in查询"></a>in查询</h3><p>查询语句如下：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">SELECT</span>
+    s<span class="token punctuation">.</span><span class="token operator">*</span> 
+<span class="token keyword">FROM</span>
+    student s 
+<span class="token keyword">WHERE</span>
+    s<span class="token punctuation">.</span>s_id <span class="token operator">IN</span> <span class="token punctuation">(</span> <span class="token keyword">SELECT</span> sc<span class="token punctuation">.</span>s_id <span class="token keyword">FROM</span> sc sc <span class="token keyword">WHERE</span> sc<span class="token punctuation">.</span>c_id <span class="token operator">=</span> <span class="token number">1</span> <span class="token operator">AND</span> sc<span class="token punctuation">.</span>score <span class="token operator">=</span> <span class="token number">100</span> <span class="token punctuation">)</span></code></pre>
+<p>执行时间：<code>30118.381s</code>，没有实际测过（参考来的），反正很慢很慢很慢就是了。</p>
+<p>看一下执行计划（不懂的<a href="http://132.232.92.124/2019/06/06/explain/" target="_blank" rel="noopener">点击详解</a>）：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">EXPLAIN</span> <span class="token keyword">SELECT</span> s<span class="token punctuation">.</span><span class="token operator">*</span> <span class="token keyword">FROM</span> student s <span class="token keyword">WHERE</span> s<span class="token punctuation">.</span>s_id <span class="token operator">IN</span> <span class="token punctuation">(</span> <span class="token keyword">SELECT</span> sc<span class="token punctuation">.</span>s_id <span class="token keyword">FROM</span> sc sc <span class="token keyword">WHERE</span> sc<span class="token punctuation">.</span>c_id <span class="token operator">=</span> <span class="token number">1</span> <span class="token operator">AND</span> sc<span class="token punctuation">.</span>score <span class="token operator">=</span> <span class="token number">100</span> <span class="token punctuation">)</span></code></pre>
+<img src="https://i.postimg.cc/3Nf0yVdL/image.jpg" width="800">
+
+<p>查看结果发现没有用到索引，type全是ALL，那么首先想到的就是建立一个索引，建立索引的字段当然是在where条件的字段。</p>
+<p>先给sc表的c_id和score建个索引：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">index</span> sc_c_id_index <span class="token keyword">on</span> sc<span class="token punctuation">(</span>c_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">CREATE</span> <span class="token keyword">index</span> sc_score_index <span class="token keyword">on</span> sc<span class="token punctuation">(</span>score<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">CREATE</span> <span class="token keyword">index</span> sc_s_id_index <span class="token keyword">on</span> sc<span class="token punctuation">(</span>s_id<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>再次执行上述查询语句，时间为：<code>0.983s</code>，明显变快很多倍</p>
+<p>看一下执行计划：</p>
+<img src="https://i.postimg.cc/NfLHhszZ/in.jpg" width="800">
+
+<p>再查看引擎优化后的sql（EXPLAIN EXTENDED SQL; SHOW WARNINGS;）：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">SELECT</span>
+    <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s_id<span class="token punctuation">`</span> <span class="token keyword">AS</span> <span class="token punctuation">`</span>s_id<span class="token punctuation">`</span><span class="token punctuation">,</span>
+    <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s_name<span class="token punctuation">`</span> <span class="token keyword">AS</span> <span class="token punctuation">`</span>s_name<span class="token punctuation">`</span> 
+<span class="token keyword">FROM</span>
+    <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>student<span class="token punctuation">`</span> <span class="token punctuation">`</span>s<span class="token punctuation">`</span> 
+<span class="token keyword">WHERE</span>
+    <span class="token operator">&lt;</span> in_optimizer <span class="token operator">></span> <span class="token punctuation">(</span>
+    <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s_id<span class="token punctuation">`</span><span class="token punctuation">,</span><span class="token operator">&lt;</span> <span class="token keyword">EXISTS</span> <span class="token operator">></span> <span class="token punctuation">(</span>
+<span class="token keyword">SELECT</span>
+    <span class="token number">1</span> 
+<span class="token keyword">FROM</span>
+    <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>sc<span class="token punctuation">`</span> 
+<span class="token keyword">WHERE</span>
+    <span class="token punctuation">(</span>
+    <span class="token punctuation">(</span> <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>sc<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>score<span class="token punctuation">`</span> <span class="token operator">=</span> <span class="token number">100</span> <span class="token punctuation">)</span> 
+    <span class="token operator">AND</span> <span class="token punctuation">(</span> <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>sc<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>c_id<span class="token punctuation">`</span> <span class="token operator">=</span> <span class="token number">2</span> <span class="token punctuation">)</span> 
+    <span class="token operator">AND</span> <span class="token punctuation">(</span> <span class="token operator">&lt;</span> CACHE <span class="token operator">></span> <span class="token punctuation">(</span> <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s_id<span class="token punctuation">`</span> <span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token punctuation">`</span>test<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>sc<span class="token punctuation">`</span><span class="token punctuation">.</span><span class="token punctuation">`</span>s_id<span class="token punctuation">`</span> <span class="token punctuation">)</span> 
+    <span class="token punctuation">)</span> 
+    <span class="token punctuation">)</span> </code></pre>
+<p>从执行计划可以看到MySQL将sql优化成了EXISTS子句，即先执行外层查询，再执行里层查询，这样久要循环<code>69987 * 4</code>次，从执行计划可以看到只走了sc的s_id的索引，耗时相对较长，所以下面改用连接查询测试。</p>
+<h3 id="连接查询"><a href="#连接查询" class="headerlink" title="连接查询"></a>连接查询</h3><p>查询语句：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">SELECT</span>
+    s<span class="token punctuation">.</span><span class="token operator">*</span> 
+<span class="token keyword">FROM</span>
+    student s
+    <span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> sc sc <span class="token keyword">ON</span> sc<span class="token punctuation">.</span>s_id <span class="token operator">=</span> s<span class="token punctuation">.</span>s_id 
+<span class="token keyword">WHERE</span>
+    sc<span class="token punctuation">.</span>c_id <span class="token operator">=</span> <span class="token number">1</span> 
+    <span class="token operator">AND</span> sc<span class="token punctuation">.</span>score <span class="token operator">=</span> <span class="token number">100</span><span class="token punctuation">;</span></code></pre>
+<p>先删除之前的索引，执行上述查询语句，耗时：<code>0.213s</code>，效率非常快，看看执行计划，</p>
+<img src="https://i.postimg.cc/nhD9zdZk/image.jpg" width="800">
+
+<p>可以看到执行计划先走的student表的主键索引，再走sc全表，不加索引是in查询的<code>5倍</code>效率</p>
+<p>我们给sc的c_id和score建立个索引试试</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">index</span> sc_c_id_index <span class="token keyword">on</span> sc<span class="token punctuation">(</span>c_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">CREATE</span> <span class="token keyword">index</span> sc_score_index <span class="token keyword">on</span> sc<span class="token punctuation">(</span>score<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<img src="https://i.postimg.cc/bv0G0sZS/image.jpg" width="800">
+
+<p>执行上述查询语句，耗时：<code>0.054s</code>，从执行计划可以看到，走了c_id和score两个索引一共只有<code>1396 * 1</code>的查询次数，查询速度提升了4倍。相比in查询提高了<code>20倍</code>效率。</p>
+<p>附图SQL语句执行顺序：</p>
+<p><code>FROM &gt; ON &gt; JOIN &gt; WHERE &gt; GROUP BY&gt; WITH &gt; HAVING &gt; SELECT &gt; DISTINCT &gt; ORDER BY&gt; LIMIT</code></p>
+<img src="https://i.postimg.cc/DZ2SxnGj/image.png" width="300">
+
+<h2 id="联合索引的调优"><a href="#联合索引的调优" class="headerlink" title="联合索引的调优"></a>联合索引的调优</h2><img src="https://i.postimg.cc/fLBJFpjw/image.jpg" width="800">
+
+<ul>
+<li>其实从执行计划的type就能看出来sc的type是<code>index_merge</code>，这里用到了<code>intersect</code>并集操作，即两个索引同时检索的结果再求并集，再看字段<code>score</code>和<code>c_id</code>的区分度，单从一个字段看从SC表检索，c_id = 2检索的结果是<code>142158</code>，score = 84的结果是<code>6851</code>，而<code>c_id = 2 and score = 84</code> 的结果是<code>1390</code>，即这两个字段联合起来的区分度是比较高的，因此建立联合索引查询效率将会更高。</li>
+<li>另外一个角度看，该表的数据是70w，以后会更多，就索引存储而言，都是不小的数目，随着数据量的增加，索引就不能全部加载到内存，而是要从磁盘去读取，这样索引的个数越多，读磁盘的开销就越大，因此根据具体业务情况建立<code>多列的联合索引</code>是必要的，那么我们来试试吧。</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">alter</span> <span class="token keyword">table</span> SC <span class="token keyword">drop</span> <span class="token keyword">index</span> sc_c_id_index<span class="token punctuation">;</span>
+<span class="token keyword">alter</span> <span class="token keyword">table</span> SC <span class="token keyword">drop</span> <span class="token keyword">index</span> sc_score_index<span class="token punctuation">;</span>
+<span class="token keyword">create</span> <span class="token keyword">index</span> sc_c_id_score_index <span class="token keyword">on</span> SC<span class="token punctuation">(</span>c_id<span class="token punctuation">,</span>score<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<img src="https://i.postimg.cc/qqqzdwj2/image.jpg" width="800">
+
+<p>执行上述查询语句，消耗时间为：<code>0.029s</code>，这个速度还是可以接受的，快了<code>一倍</code>，随着数据量越大效果越明显。</p>
+<h3 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h3><p>就是查询的列都建立了索引<code>至少索引要包含查询的列</code>，这样在获取结果集的时候不用再去磁盘获取其它列的数据，直接返回索引数据即可</p>
+<p>简洁说就是<code>select</code>尽量不返回<code>*</code>而是返回需要的有索引的列，如下面所示，第二条效率大于第一条</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> employees <span class="token keyword">WHERE</span> name<span class="token operator">=</span> <span class="token string">'小明'</span> <span class="token operator">AND</span> age <span class="token operator">=</span> <span class="token number">22</span> <span class="token operator">AND</span> POSITION <span class="token operator">=</span><span class="token string">'Java'</span><span class="token punctuation">;</span>
+<span class="token keyword">SELECT</span> NAME<span class="token punctuation">,</span> age<span class="token punctuation">,</span> POSITION <span class="token keyword">FROM</span> employees <span class="token keyword">WHERE</span> NAME<span class="token operator">=</span> <span class="token string">'小明'</span> <span class="token operator">AND</span> age <span class="token operator">=</span> <span class="token number">22</span> <span class="token operator">AND</span> POSITION <span class="token operator">=</span><span class="token string">'Java'</span><span class="token punctuation">;</span></code></pre>
+<h3 id="最左前缀"><a href="#最左前缀" class="headerlink" title="最左前缀"></a>最左前缀</h3><p>假设 a、b、c 为联合索引，即<code>create index index_a_b_c on table(a,b,c);</code></p>
+<table>
+<thead>
+<tr>
+<th>WHERE 语句</th>
+<th>索引使用情况</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WHERE a = ‘小明’</td>
+<td>使用到 a</td>
+</tr>
+<tr>
+<td>WHERE a = ‘小明’ AND b = ‘李磊’</td>
+<td>使用到 a 、b</td>
+</tr>
+<tr>
+<td>WHERE a = ‘小明’ AND b = ‘李磊’ AND c = ‘韩梅梅’</td>
+<td>使用到 a、b、c</td>
+</tr>
+<tr>
+<td>WHERE b = ‘李磊’ 或者 WHERE b = ‘李磊’ AND c = ‘韩梅梅’ 或者 WHERE c = ‘韩梅梅’</td>
+<td>没有用到</td>
+</tr>
+<tr>
+<td>WHERE a = ‘小明’ AND c = ‘韩梅梅’</td>
+<td>a 用到了，c 没有用到，因为 b 中间断了</td>
+</tr>
+<tr>
+<td>WHERE a = ‘小明’ AND b &gt; ‘李磊’ AND c = ‘韩梅梅’</td>
+<td>a、b 用到了，c 不能用在范围后</td>
+</tr>
+<tr>
+<td>WHERE a = ‘小明’ AND b = ‘李磊%’ AND c = ‘韩梅梅’</td>
+<td>使用到 a、b、c</td>
+</tr>
+<tr>
+<td>WHERE a = ‘小明’ AND b = ‘%李磊’ AND c = ‘韩梅梅’</td>
+<td>只用到 a</td>
+</tr>
+<tr>
+<td>WHERE a = ‘小明’ AND b = ‘%李磊%’ AND c = ‘韩梅梅’</td>
+<td>只用到 a</td>
+</tr>
+<tr>
+<td>WHERE a = ‘小明’ AND b = ‘李%磊%’ AND c = ‘韩梅梅’</td>
+<td>使用到 a、b、c</td>
+</tr>
+</tbody></table>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="索引优化相关"><a href="#索引优化相关" class="headerlink" title="索引优化相关"></a>索引优化相关</h3><ul>
+<li>表的主键、外键必须有索引</li>
+<li>数据量超过300的表应该有索引</li>
+<li>索引应该建在选择性高的字段上</li>
+<li>排序字段上需要建立索引（<code>ORDER BY</code>）</li>
+<li>分组字段上需要建立索引（<code>GROUP BY</code>）</li>
+<li>索引应该建在小字段上，对于大的文本字段甚至超长字段，不要建索引</li>
+<li>WHERE条件字段上需要建立索引（<code>WHERE</code>）</li>
+<li>多表连接的字段上需要建立索引，这样可以极大的提高表连接的效率（<code>LEFT JOIN</code>、<code>RIGHT JOIN</code>、<code>INNER JOIN</code>）</li>
+<li>嵌套子查询效率比较低，可以将其优化成连接查询（少用<code>IN</code>，多用<code>JOIN</code>）</li>
+<li>频繁进行数据操作的表，不要建立太多的索引</li>
+<li>连接表时，可以先用where条件对表进行过滤，然后做表连接（虽然MySQL会对连表语句做优化）</li>
+<li>复合索引的建立需要进行仔细分析；尽量考虑用单字段索引代替<ul>
+<li>正确选择复合索引中的主列字段，一般是选择性较好的字段</li>
+<li>如果复合索引中包含的字段经常单独出现在Where子句中，则分解为多个单字段索引</li>
+<li>如果复合索引所包含的字段超过3个，那么仔细考虑其必要性，考虑减少复合的字段</li>
+<li>果既有单字段索引，又有这几个字段上的复合索引，一般可以删除复合索引</li>
+<li>复合索引的几个字段是否经常同时以AND方式出现在Where子句中？单字段查询是否极少甚至没有？如果是，则可以建立复合索引；否则考虑单字段索引</li>
+</ul>
+</li>
+<li>学会分析sql执行计划，mysql会对sql进行优化，所以分析执行计划很重要</li>
+<li>尽量使用覆盖索引，能增加查询效率</li>
+<li><strong><code>删除数据，修改索引字段，新增操作都会对索引进行维护，维护开销大，同时需要更大的磁盘空间，需要综合平衡，取最优点</code></strong></li>
+</ul>
+<h3 id="调优建议相关"><a href="#调优建议相关" class="headerlink" title="调优建议相关"></a>调优建议相关</h3><ul>
+<li>对查询进行优化，应尽量避免全表扫描，首先应考虑在 where 及 order by 涉及的列上建立索引。</li>
+<li>应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表扫描，</li>
+</ul>
+<pre><code>select id from t where num is null;</code></pre><ul>
+<li>可以在 num 上设置默认值 0,确保表中 num 列没有 null 值，然后这样查询：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span></code></pre>
+<ul>
+<li><p>应尽量避免在 where 子句中使用!=或&lt;&gt;操作符，否则将引擎放弃使用索引而进行全表扫描。</p>
+</li>
+<li><p>应尽量避免在 where 子句中使用 or 来连接条件，否则将导致引擎放弃使用索引而进行全表扫描，</p>
+</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num<span class="token operator">=</span><span class="token number">10</span> <span class="token operator">or</span> num<span class="token operator">=</span><span class="token number">20</span><span class="token punctuation">;</span></code></pre>
+<p>​        可以这样查询：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num<span class="token operator">=</span><span class="token number">10</span> <span class="token keyword">union</span> <span class="token keyword">all</span> <span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num<span class="token operator">=</span><span class="token number">20</span><span class="token punctuation">;</span></code></pre>
+<ul>
+<li>in 和 not in 也要慎用，否则会导致全表扫描，如：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num <span class="token operator">in</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<ul>
+<li>对于连续的数值，能用 between 就不要用 in 了：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num <span class="token operator">between</span> <span class="token number">1</span> <span class="token operator">and</span> <span class="token number">3</span><span class="token punctuation">;</span></code></pre>
+<ul>
+<li>下面的查询也将导致全表扫描：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> name <span class="token operator">like</span> <span class="token string">'%c%'</span><span class="token punctuation">;</span></code></pre>
+<p>若要提高效率，可以考虑全文检索。</p>
+<ul>
+<li>如果在 where 子句中使用参数，也会导致全表扫描。因为 SQL 只有在运行时才会解析局部变量，但优 化程序不能将访问计划的选择推迟到运行时;它必须在编译时进行选择。然 而，如果在编译时建立访问计 划，变量的值还是未知的，因而无法作为索引选择的输入项。如下面语句将进行全表扫描：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num<span class="token operator">=</span><span class="token variable">@num</span> <span class="token punctuation">;</span></code></pre>
+<ul>
+<li>可以改为强制查询使用索引：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">with</span><span class="token punctuation">(</span><span class="token keyword">index</span><span class="token punctuation">(</span>索引名<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">where</span> num<span class="token operator">=</span><span class="token variable">@num</span> <span class="token punctuation">;</span></code></pre>
+<ul>
+<li>应尽量避免在 where 子句中对字段进行表达式操作， 这将导致引擎放弃使用索引而进行全表扫描。</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num<span class="token operator">/</span><span class="token number">2</span><span class="token operator">=</span><span class="token number">100</span><span class="token punctuation">;</span></code></pre>
+<p>可以这样查询：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> num<span class="token operator">=</span><span class="token number">100</span><span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">;</span></code></pre>
+<ul>
+<li>应尽量避免在 where 子句中对字段进行函数操作，这将导致引擎放弃使用索引而进行全表扫描。如：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> substring<span class="token punctuation">(</span>name<span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token operator">=</span><span class="token string">'abc'</span><span class="token punctuation">;</span><span class="token comment" spellcheck="true">#name 以 abc 开头的 id</span></code></pre>
+<p>​        应改为：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> id <span class="token keyword">from</span> t <span class="token keyword">where</span> name <span class="token operator">like</span> <span class="token string">'abc%'</span><span class="token punctuation">;</span></code></pre>
+<ul>
+<li><p>不要在 where 子句中的“=”左边进行函数、算术运算或其他表达式运算，否则系统将可能无法正确使用 索引。</p>
+</li>
+<li><p>在使用索引字段作为条件时，如果该索引是复合索引，那么必须使用到该索引中的第一个字段作为条件 时才能保证系统使用该索引， 否则该索引将不会 被使用， 并且应尽可能的让字段顺序与索引顺序相一致。</p>
+<p>不要写一些没有意义的查询，如需要生成一个空表结构：</p>
+</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> col1<span class="token punctuation">,</span>col2 <span class="token keyword">into</span> <span class="token comment" spellcheck="true">#t from t where 1=0;</span></code></pre>
+<ul>
+<li>这类代码不会返回任何结果集，但是会消耗系统资源的，应改成这样：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">create</span> <span class="token keyword">table</span> <span class="token comment" spellcheck="true">#t(…);</span></code></pre>
+<ul>
+<li>很多时候用 exists 代替 in 是一个好的选择：</li>
+</ul>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> num <span class="token keyword">from</span> <span class="token number">a</span> <span class="token keyword">where</span> num <span class="token operator">in</span><span class="token punctuation">(</span><span class="token keyword">select</span> num <span class="token keyword">from</span> <span class="token number">b</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>​            用下面的语句替换：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">select</span> num <span class="token keyword">from</span> <span class="token number">a</span> <span class="token keyword">where</span> <span class="token keyword">exists</span><span class="token punctuation">(</span><span class="token keyword">select</span> <span class="token number">1</span> <span class="token keyword">from</span> <span class="token number">b</span> <span class="token keyword">where</span> num<span class="token operator">=</span><span class="token number">a</span><span class="token punctuation">.</span>num<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<ul>
+<li><p>并不是所有索引对查询都有效，SQL 是根据表中数据来进行查询优化的，当索引列有大量数据重复时， SQL 查询可能不会去利用索引，如一表中有字段 <strong>*,male、female 几乎各一半，那么即使在 *</strong> 上建 了索引也对查询效率起不了作用。</p>
+</li>
+<li><p>索引并不是越多越好，索引固然可以提高相应的 select 的效率，但同时也降低了 insert 及 update 的效率，因为 insert 或 update 时有可能会重建索引，所以怎样建索引需要慎重考虑，视具体情况而定。一个表的索引数最好不要超过 6 个，若太多则应考虑一些不常使用到的列上建的索引是否有必要。</p>
+</li>
+<li><p>应尽可能的避免更新 clustered 索引数据列， 因为 clustered 索引数据列的顺序就是表记录的物理存储顺序，一旦该列值改变将导致整个表记录的顺序的调整，会耗费相当大的资源。若应用系统需要频繁更新 clustered 索引数据列，那么需要考虑是否应将该索引建为 clustered 索引。</p>
+</li>
+<li><p>尽量使用数字型字段，若只含数值信息的字段尽量不要设计为字符型，这会降低查询和连接的性能，并 会增加存储开销。这是因为引擎在处理查询和连接时会逐个比较字符串中每一个字符，而对于数字型而言 只需要比较一次就够了。</p>
+</li>
+<li><p>尽可能的使用 varchar/nvarchar 代替 char/nchar , 因为首先变长字段存储空间小， 可以节省存储空间， 其次对于查询来说，在一个相对较小的字段内搜索效率显然要高些。</p>
+</li>
+<li><p>任何地方都不要使用 select * from t ,用具体的字段列表代替“*”,不要返回用不到的任何字段。</p>
+</li>
+<li><p>尽量使用表变量来代替临时表。如果表变量包含大量数据，请注意索引非常有限(只有主键索引)。</p>
+</li>
+<li><p>避免频繁创建和删除临时表，以减少系统表资源的消耗。</p>
+</li>
+<li><p>临时表并不是不可使用，适当地使用它们可以使某些例程更有效，例如，当需要重复引用大型表或常用 表中的某个数据集时。但是，对于一次性事件， 最好使用导出表。</p>
+</li>
+<li><p>在新建临时表时，如果一次性插入数据量很大，那么可以使用 select into 代替 create table,避免造成大量 log ,以提高速度;如果数据量不大，为了缓和系统表的资源，应先 create table,然后 insert.</p>
+</li>
+<li><p>如果使用到了临时表， 在存储过程的最后务必将所有的临时表显式删除， 先 truncate table ,然后 drop table ,这样可以避免系统表的较长时间锁定。</p>
+</li>
+<li><p>尽量避免使用游标，因为游标的效率较差，如果游标操作的数据超过 1 万行，那么就应该考虑改写。</p>
+</li>
+<li><p>使用基于游标的方法或临时表方法之前，应先寻找基于集的解决方案来解决问题，基于集的方法通常更 有效。</p>
+</li>
+<li><p>与临时表一样，游标并不是不可使用。对小型数据集使用 FAST_FORWARD 游标通常要优于其他逐行处理方法，尤其是在必引用几个表才能获得所需的数据时。在结果集中包括“合计”的例程通常要比使用游标执行的速度快。如果开发时间允许，基于游标的方法和基于集的方法都可以尝试一下，看哪一种方法的效果更好。</p>
+</li>
+<li><p>在所有的存储过程和触发器的开始处设置 SET NOCOUNT ON ,在结束时设置 SET NOCOUNT OFF .无需在执行存储过程和触发器的每个语句后向客户端发送 DONE_IN_PROC 消息。</p>
+</li>
+<li><p>尽量避免大事务操作，提高系统并发能力。 sql 优化方法使用索引来更快地遍历表。 缺省情况下建立的索引是非群集索引，但有时它并不是最佳的。在非群集索引下，数据在物理上随机存放在数据页上。合理的索引设计要建立在对各种查询的分析和预测上。一般来说：</p>
+<p>a.有大量重复值、且经常有范围查询( &gt; ,&lt; ,&gt; =,&lt; =)和 order by、group by 发生的列，可考虑建立集群索引;</p>
+<p>b.经常同时存取多列，且每列都含有重复值可考虑建立组合索引;</p>
+<p>c.组合索引要尽量使关键查询形成索引覆盖，其前导列一定是使用最频繁的列。索引虽有助于提高性能但 不是索引越多越好，恰好相反过多的索引会导致系统低效。用户在表中每加进一个索引，维护索引集合就 要做相应的更新工作。</p>
+</li>
+<li><p>定期分析表和检查表。</p>
+</li>
+</ul>
+<pre><code>分析表的语法：ANALYZE [LOCAL | NO_WRITE_TO_BINLOG] TABLE tb1_name[, tbl_name]...</code></pre><p>以上语句用于分析和存储表的关键字分布，分析的结果将可以使得系统得到准确的统计信息，使得SQL能够生成正确的执行计划。如果用户感觉实际执行计划并不是预期的执行计划，执行一次分析表可能会解决问题。在分析期间，使用一个读取锁定对表进行锁定。这对于MyISAM，DBD和InnoDB表有作用。</p>
+<pre><code>例如分析一个数据表：analyze table table_name
+检查表的语法：CHECK TABLE tb1_name[,tbl_name]...[option]...option = {QUICK | FAST | MEDIUM | EXTENDED | CHANGED}</code></pre><p>检查表的作用是检查一个或多个表是否有错误，CHECK TABLE 对MyISAM 和 InnoDB表有作用，对于MyISAM表，关键字统计数据被更新</p>
+<p>CHECK TABLE 也可以检查视图是否有错误，比如在视图定义中被引用的表不存在。</p>
+<ul>
+<li>定期优化表。</li>
+</ul>
+<pre><code>优化表的语法：OPTIMIZE [LOCAL | NO_WRITE_TO_BINLOG] TABLE tb1_name [,tbl_name]...</code></pre><p>如果删除了表的一大部分，或者如果已经对含有可变长度行的表(含有 VARCHAR、BLOB或TEXT列的表)进行更多更改，则应使用OPTIMIZE TABLE命令来进行表优化。这个命令可以将表中的空间碎片进行合并，并且可以消除由于删除或者更新造成的空间浪费，但OPTIMIZE TABLE 命令只对MyISAM、 BDB 和InnoDB表起作用。</p>
+<pre><code>例如： optimize table table_name</code></pre><p>注意： analyze、check、optimize执行期间将对表进行锁定，因此一定注意要在MySQL数据库不繁忙的时候执行相关的操作。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><blockquote>
+<p><a href="https://www.cnblogs.com/tangyanbo/p/4462734.html" target="_blank" rel="noopener">一次非常有意思的sql优化经历</a><br><a href="https://juejin.im/post/5ce61072f265da1b5e72cb20" target="_blank" rel="noopener">MySQL 性能调优专题二（Explain执行计划使用详解）</a><br><a href="https://www.cnblogs.com/tangyanbo/p/6378741.html" target="_blank" rel="noopener">sql查询调优之where条件排序字段以及limit使用索引的奥秘</a></p>
+</blockquote>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        Author:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://github.com/Voluee" rel="external nofollow noreferrer">Voluee</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        Link:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://github.com/Voluee/2018/11/07/mysql-index/">https://github.com/Voluee/2018/11/07/mysql-index/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        Reprint policy:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    All articles in this blog are used except for special statements
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    reprint polocy. If reproduced, please indicate source
+                    <a href="https://github.com/Voluee" target="_blank">Voluee</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>Copied successfully, please follow the reprint policy of this article</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">more</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/Mysql/">
+                                    <span class="chip bg-color">Mysql</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+
+<div id="article-share">
+    
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+                <style>
+    #reward {
+        margin: 40px 0;
+        text-align: center;
+    }
+
+    #reward .reward-link {
+        font-size: 1.4rem;
+        line-height: 38px;
+    }
+
+    #reward .btn-floating:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #rewardModal {
+        width: 320px;
+        height: 350px;
+    }
+
+    #rewardModal .reward-title {
+        margin: 15px auto;
+        padding-bottom: 5px;
+    }
+
+    #rewardModal .modal-content {
+        padding: 10px;
+    }
+
+    #rewardModal .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 1.3rem;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+    #rewardModal .close:hover {
+        color: #ef5350;
+        transform: scale(1.3);
+        -moz-transform:scale(1.3);
+        -webkit-transform:scale(1.3);
+        -o-transform:scale(1.3);
+    }
+
+    #rewardModal .reward-tabs {
+        margin: 0 auto;
+        width: 210px;
+    }
+
+    .reward-tabs .tabs {
+        height: 38px;
+        margin: 10px auto;
+        padding-left: 0;
+    }
+
+    .reward-content ul {
+        padding-left: 0 !important;
+    }
+
+    .reward-tabs .tabs .tab {
+        height: 38px;
+        line-height: 38px;
+    }
+
+    .reward-tabs .tab a {
+        color: #fff;
+        background-color: #ccc;
+    }
+
+    .reward-tabs .tab a:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .reward-tabs .wechat-tab .active {
+        color: #fff !important;
+        background-color: #22AB38 !important;
+    }
+
+    .reward-tabs .alipay-tab .active {
+        color: #fff !important;
+        background-color: #019FE8 !important;
+    }
+
+    .reward-tabs .reward-img {
+        width: 210px;
+        height: 210px;
+    }
+</style>
+
+<div id="reward">
+    <a href="#rewardModal" class="reward-link modal-trigger btn-floating btn-medium waves-effect waves-light red">赏</a>
+
+    <!-- Modal Structure -->
+    <div id="rewardModal" class="modal">
+        <div class="modal-content">
+            <a class="close modal-close"><i class="fas fa-times"></i></a>
+            <h4 class="reward-title">你的赏识是我前进的动力</h4>
+            <div class="reward-content">
+                <div class="reward-tabs">
+                    <ul class="tabs row">
+                        <li class="tab col s6 alipay-tab waves-effect waves-light"><a href="#alipay">支付宝</a></li>
+                        <li class="tab col s6 wechat-tab waves-effect waves-light"><a href="#wechat">微 信</a></li>
+                    </ul>
+                    <div id="alipay">
+                        <img src="/medias/reward/alipay.jpg" class="reward-img" alt="支付宝打赏二维码">
+                    </div>
+                    <div id="wechat">
+                        <img src="/medias/reward/wechat.png" class="reward-img" alt="微信打赏二维码">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.tabs').tabs();
+    });
+</script>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="/libs/valine/av-min.js"></script>
+<script src="/libs/valine/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'YY6A0xYt72ili9sxyJe3ALYw-gzGzoHsz',
+        appKey: 'lsvOTvlP7iqLe5wGDPjbUnOA',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'true' === 'true',
+        avatar: 'mm',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: 'just go go'
+    });
+</script>
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+            <div class="card">
+                <a href="/2018/11/11/explain-detail/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/4.jpg" class="responsive-img" alt="EXPLAIN详解">
+                        
+                        <span class="card-title">EXPLAIN详解</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            这是一篇EXPLAIN详解。
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2018-11-11
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Mysql/" class="post-category">
+                                    Mysql
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Mysql/">
+                        <span class="chip bg-color">Mysql</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                Current&nbsp;<i class="far fa-dot-circle"></i>
+            </div>
+            <div class="card">
+                <a href="/2018/11/07/mysql-index/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/18.jpg" class="responsive-img" alt="SQL调优实例与总结">
+                        
+                        <span class="card-title">SQL调优实例与总结</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            这是一篇从实例出发的sql调优教程，文章开头有生成数据的语句。一键生成环境，快速上手调优。
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2018-11-07
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Mysql/" class="post-category">
+                                    Mysql
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Mysql/">
+                        <span class="chip bg-color">Mysql</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+    
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+<!-- 代码块折行 -->
+
+<style type="text/css">
+code[class*="language-"], pre[class*="language-"] { white-space: pre !important; }
+</style>
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;TOC</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            // headingsOffset: -205,
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+    <footer class="page-footer bg-color">
+    <div class="container row center-align">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            <span id="year">年份</span>
+            <a href="https://github.com/Voluee" target="_blank">Voluee</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <span id="sitetime">载入运行时间...</span>
+            <script>
+                function siteTime() {
+                    window.setTimeout("siteTime()", 1000);
+                    var seconds = 1000;
+                    var minutes = seconds * 60;
+                    var hours = minutes * 60;
+                    var days = hours * 24;
+                    var years = days * 365;
+                    var today = new Date();
+                    var startYear = "2018";
+                    var startMonth = "6";
+                    var startDate = "23";
+                    var startHour = "0";
+                    var startMinute = "0";
+                    var startSecond = "0";
+                    var todayYear = today.getFullYear();
+                    var todayMonth = today.getMonth() + 1;
+                    var todayDate = today.getDate();
+                    var todayHour = today.getHours();
+                    var todayMinute = today.getMinutes();
+                    var todaySecond = today.getSeconds();
+                    var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                    var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                    var diff = t2 - t1;
+                    var diffYears = Math.floor(diff / years);
+                    var diffDays = Math.floor((diff / days) - diffYears * 365);
+                    var diffHours = Math.floor((diff - (diffYears * 365 + diffDays) * days) / hours);
+                    var diffMinutes = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours) /
+                        minutes);
+                    var diffSeconds = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours -
+                        diffMinutes * minutes) / seconds);
+                    if (startYear == todayYear) {
+                        document.getElementById("year").innerHTML = todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffDays + " 天 " + diffHours +
+                            " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    } else {
+                        document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffYears + " 年 " + diffDays +
+                            " 天 " + diffHours + " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    }
+                }
+                setInterval(siteTime, 1000);
+            </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script src="/js/search.js"></script>
+<script type="text/javascript">
+$(function () {
+    searchFunc("/" + "search.xml", 'searchInput', 'searchResult');
+});
+</script>
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <script type="text/javascript" src="/libs/background/ribbon-dynamic.js" async="async"></script>
+    
+    
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
